@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Robot Control</title>
+    <script>
+        function sendAction(action) {
+            let params = `action=${action}`;
+            if (action === 'drive') {
+                const speedR = document.getElementById('speedR').value;
+                const speedL = document.getElementById('speedL').value;
+                params += `&speedR=${speedR}&speedL=${speedL}`;
+            }
+            fetch('/control', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params
+            })
+            .then(response => response.text().then(text => {
+                document.getElementById('info').innerText = text;
+            }));
+        }
+    </script>
+</head>
+<body>
+    <h1>Robot Control</h1>
+    <div>
+        <button onclick="sendAction('start')">Start</button>
+        <button onclick="sendAction('stop')">Stop</button>
+        <button onclick="sendAction('faster')">Faster</button>
+        <button onclick="sendAction('slower')">Slower</button>
+    </div>
+    <br>
+    <div>
+        <label for="speedR">Speed Right:</label>
+        <input type="range" id="speedR" name="speedR" min="0" max="255" value="150"><br><br>
+        <label for="speedL">Speed Left:</label>
+        <input type="range" id="speedL" name="speedL" min="0" max="255" value="150"><br><br>
+        <button onclick="sendAction('drive')">Drive</button>
+        <button onclick="window.location.href='http://192.168.4.1/settings.html'">Einstellungen</button>
+        info: <span id="info"></span>
+    </div>
+</body>
+</html>

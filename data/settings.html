@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Robot Settings</title>
+    <button onclick="window.location.href='http://192.168.4.1'">Zurück</button>
+    <script>
+        function getSettings() {
+            fetch('/settings')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('minDrive').value = data.minDrive;
+                    document.getElementById('maxDrive').value = data.maxDrive;
+                    document.getElementById('minPause').value = data.minPause;
+                    document.getElementById('maxPause').value = data.maxPause;
+                    document.getElementById('minChange').value = data.minChange;
+                    document.getElementById('maxChange').value = data.maxChange;
+                });
+        }
+
+        function setSettings() {
+            const minDrive = document.getElementById('minDrive').value;
+            const maxDrive = document.getElementById('maxDrive').value;
+            const minPause = document.getElementById('minPause').value;
+            const maxPause = document.getElementById('maxPause').value;
+            const minChange = document.getElementById('minChange').value;
+            const maxChange = document.getElementById('maxChange').value;
+
+            fetch('/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `minDrive=${minDrive}&maxDrive=${maxDrive}&minPause=${minPause}&maxPause=${maxPause}&minChange=${minChange}&maxChange=${maxChange}`
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+            });
+        }
+
+        window.onload = function() {
+            getSettings();
+        }
+    </script>
+</head>
+<body>
+    <h1>Robot Settings</h1>
+    <form onsubmit="event.preventDefault(); setSettings();">
+        <label for="minDrive">Min Drive:</label>
+        <input type="number" id="minDrive" name="minDrive"><br><br>
+        <label for="maxDrive">Max Drive:</label>
+        <input type="number" id="maxDrive" name="maxDrive"><br><br>
+        <label for="minPause">Min Pause:</label>
+        <input type="number" id="minPause" name="minPause"><br><br>
+        <label for="maxPause">Max Pause:</label>
+        <input type="number" id="maxPause" name="maxPause"><br><br>
+        <label for="minChange">Min Change:</label>
+        <input type="number" id="minChange" name="minChange"><br><br>
+        <label for="maxChange">Max Change:</label>
+        <input type="number" id="maxChange" name="maxChange"><br><br>
+        <input type="submit" value="Save Settings">
+    </form>
+</body>
+</html>
