@@ -1,7 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Robot Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .slider-container {
+            position: relative;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .slider-zero-mark {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            height: 30px;
+            width: 2px;
+            background-color: red;
+        }
+
+        #info {
+            display: inline-block;
+            padding: 10px;
+            background-color: #eaeaea;
+            border-radius: 5px;
+            margin-top: 10px;
+            word-wrap: break-word;
+            width: 90%;
+            max-width: 800px;
+        }
+    </style>
     <script>
         function sendAction(action) {
             let params = `action=${action}`;
@@ -21,25 +93,48 @@
                 document.getElementById('info').innerText = text;
             }));
         }
+
+        function updateInfo() {
+            fetch('/info')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('info').innerText = data;
+            });
+        }
+
+        // Aktualisiere Info alle 1 Sekunde
+        setInterval(updateInfo, 1000);
     </script>
 </head>
 <body>
     <h1>Robot Control</h1>
-    <div>
-        <button onclick="sendAction('start')">Start</button>
-        <button onclick="sendAction('stop')">Stop</button>
-        <button onclick="sendAction('faster')">Faster</button>
-        <button onclick="sendAction('slower')">Slower</button>
-    </div>
-    <br>
-    <div>
-        <label for="speedR">Speed Right:</label>
-        <input type="range" id="speedR" name="speedR" min="0" max="255" value="150"><br><br>
-        <label for="speedL">Speed Left:</label>
-        <input type="range" id="speedL" name="speedL" min="0" max="255" value="150"><br><br>
-        <button onclick="sendAction('drive')">Drive</button>
-        <button onclick="window.location.href='http://192.168.4.1/settings.html'">Einstellungen</button>
-        info: <span id="info"></span>
+    <div class="container">
+        <div>
+            <button onclick="sendAction('start')">Start</button>
+            <button onclick="sendAction('stop')">Stop</button>
+            <button onclick="sendAction('faster')">Faster</button>
+            <button onclick="sendAction('slower')">Slower</button>
+        </div>
+        <br>
+        <div>
+            <label for="speedR">Speed Right:</label>
+            <div class="slider-container">
+                <input type="range" id="speedR" name="speedR" min="-255" max="255" value="150">
+                <div class="slider-zero-mark"></div>
+            </div>
+            <br><br>
+
+            <label for="speedL">Speed Left:</label>
+            <div class="slider-container">
+                <input type="range" id="speedL" name="speedL" min="-255" max="255" value="150">
+                <div class="slider-zero-mark"></div>
+            </div>
+            <br><br>
+
+            <button onclick="sendAction('drive')">Drive</button>
+            <button onclick="window.location.href='/settings.html'">Einstellungen</button>
+            <div>info: <span id="info"></span></div>
+        </div>
     </div>
 </body>
 </html>
