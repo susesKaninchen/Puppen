@@ -7,8 +7,8 @@
 #include <Ramp.h>
 #include <ArduinoOTA.h>
 #define AVOID_LAG_MIN 1000
-#define AVOID_LAG_MAX 3000
-bool AP = false;
+#define AVOID_LAG_MAX 7000
+bool AP = true;
 
 // Pinbelegungen für die Motoren
 const int motorPin1 = 16;
@@ -23,7 +23,7 @@ int maxSpeed = 255;
 // Ramp-Objekte für die Motoren, mit +/- int
 rampInt motorRampL;
 rampInt motorRampR;
-int lastSpeed = 150;
+int lastSpeed = 100;
 
 // Zeiten für zufällige Aktionen
 long minMSChange = 10000;
@@ -31,7 +31,7 @@ long maxMSChange = 20000;
 
 // Zeiten für Bewegungsabläufe
 long lastDrive = 0, durationDrive = 0, lastPause = 0, durationPause = 0;
-long minMSDrive = 50000, maxMSDrive = 100000, minMSPause = 50000, maxMSPause = 100000;
+long minMSDrive = 50000, maxMSDrive = 100000, minMSPause = 10000, maxMSPause = 120000;
 
 long duration;
 long lastChange = 0, durationChange = 0; // Hinzugefügt
@@ -81,7 +81,7 @@ void setup() {
         WiFi.softAP("Robot1", "1234x6789");
         Serial.println("Access Point gestartet");
     } else {
-        WiFi.begin("Seewald", "....");
+        WiFi.begin("fablab", "fablabfdm");
         Serial.println("WLAN Verbindung wird hergestellt");
         while (WiFi.status() != WL_CONNECTED) {
             delay(1000);
@@ -89,6 +89,7 @@ void setup() {
         }
         Serial.println("WLAN Verbindung hergestellt");
     }
+    Serial.println(WiFi.localIP());
 
     if (!LittleFS.begin(true)) {
         Serial.println("SPIFFS Fehler");
@@ -322,6 +323,12 @@ bool isObstacleDetected() {
 
 void obstacleAvoidance() {
     if (avoidanceDirection == 1) {
+        if (motorRampL.getTarget() == 0) {
+            motorRampL.go(lastSpeed, 1000);
+        }
+        if (motorRampR.getTarget() == 0) {
+            motorRampR.go(lastSpeed, 1000);
+        }
         // Update ramp only, if the target is different
         int newTarget = abs(motorRampL.getTarget())*-1;
         if (motorRampL.getTarget() != newTarget) {
@@ -381,6 +388,7 @@ void loop() {
                 else if (distanceFrontLeft < 40 || distanceSideLeft < 40) {
                     avoidanceDirection = 1; // Hindernis links, drehe nach rechts
                 } else if (distanceFrontRight < 40 || distanceSideRight < 40) {
+                    avoidanceEndTime += avoidanceDuration + avoidanceDuration;
                     avoidanceDirection = 2; // Hindernis rechts, drehe nach links
                 }
                 obstacleAvoidance();
