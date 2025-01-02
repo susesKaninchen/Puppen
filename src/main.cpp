@@ -45,14 +45,17 @@ long lastChange = 0, durationChange = 0; // Hinzugefügt
 #define ECHO_PIN_SIDE_LEFT 33
 #define TRIGGER_PIN_SIDE_RIGHT 14
 #define ECHO_PIN_SIDE_RIGHT 13
+#define TRIGGER_PIN_MID 2
+#define ECHO_PIN_MID 4
 
 #define MAX_DISTANCE 200
 NewPing sonarFrontLeft(TRIGGER_PIN_FRONT_LEFT, ECHO_PIN_FRONT_LEFT, MAX_DISTANCE);
 NewPing sonarFrontRight(TRIGGER_PIN_FRONT_RIGHT, ECHO_PIN_FRONT_RIGHT, MAX_DISTANCE);
 NewPing sonarSideLeft(TRIGGER_PIN_SIDE_LEFT, ECHO_PIN_SIDE_LEFT, MAX_DISTANCE);
 NewPing sonarSideRight(TRIGGER_PIN_SIDE_RIGHT, ECHO_PIN_SIDE_RIGHT, MAX_DISTANCE);
+NewPing sonarMid(TRIGGER_PIN_MID, ECHO_PIN_MID, MAX_DISTANCE);
 
-long distanceFrontLeft, distanceFrontRight, distanceSideLeft, distanceSideRight;
+long distanceFrontLeft, distanceFrontRight, distanceSideLeft, distanceSideRight, distanceMid;
 bool manualMode = false;
 bool drive = true;
 
@@ -78,7 +81,7 @@ void setup() {
     Serial.println("Motoren initialisiert");
     // Option wür WLAN und Access Point
     if (AP) {
-        WiFi.softAP("Robot1", "1234x6789");
+        WiFi.softAP("Robot3", "1234x6789");
         Serial.println("Access Point gestartet");
     } else {
         WiFi.begin("fablab", "fablabfdm");
@@ -298,15 +301,21 @@ void motorControl(int motor, int speed) {
 }
 
 void updateDistance() {
-    distanceFrontLeft = sonarFrontLeft.ping_cm();
-    distanceFrontRight = sonarFrontRight.ping_cm();
-    distanceSideLeft = sonarSideLeft.ping_cm();
-    distanceSideRight = sonarSideRight.ping_cm();
+    distanceFrontLeft = sonarFrontLeft.ping_cm(MAX_DISTANCE);
+    delay(5);
+    distanceFrontRight = sonarFrontRight.ping_cm(MAX_DISTANCE);
+    delay(5);
+    distanceSideLeft = sonarSideLeft.ping_cm(MAX_DISTANCE);
+    delay(5);
+    distanceSideRight = sonarSideRight.ping_cm(MAX_DISTANCE);
+    delay(5);
+    distanceMid = sonarMid.ping_cm(MAX_DISTANCE);
 
     distanceFrontLeft = distanceFrontLeft == 0 ? MAX_DISTANCE : distanceFrontLeft;
     distanceFrontRight = distanceFrontRight == 0 ? MAX_DISTANCE : distanceFrontRight;
     distanceSideLeft = distanceSideLeft == 0 ? MAX_DISTANCE : distanceSideLeft;
     distanceSideRight = distanceSideRight == 0 ? MAX_DISTANCE : distanceSideRight;
+    distanceMid = distanceMid == 0 ? MAX_DISTANCE : distanceMid;
     Serial.print("Front Left: ");
     Serial.print(distanceFrontLeft);
     Serial.print(" Front Right: ");
@@ -314,11 +323,14 @@ void updateDistance() {
     Serial.print(" Side Left: ");
     Serial.print(distanceSideLeft);
     Serial.print(" Side Right: ");
-    Serial.println(distanceSideRight);
+    Serial.print(distanceSideRight);
+    Serial.print(" Mid: ");
+    Serial.println(distanceMid);
+
 }
 
 bool isObstacleDetected() {
-    return distanceFrontLeft < 40 || distanceFrontRight < 40 || distanceSideLeft < 40 || distanceSideRight < 40;
+    return distanceFrontLeft < 40 || distanceFrontRight < 40 || distanceSideLeft < 40 || distanceSideRight < 40 || distanceMid < 40;
 }
 
 void obstacleAvoidance() {
@@ -382,7 +394,7 @@ void loop() {
                 avoidanceEndTime = currentMillis + avoidanceDuration;
 
                 // Bestimme die Ausweichrichtung
-                if (distanceFrontLeft < 40 && distanceFrontRight < 40) {
+                if (distanceFrontLeft < 40 && distanceFrontRight < 40 || distanceMid < 30) {
                     avoidanceDirection = 0; // Hindernis vorne, zurücksetzen
                 }
                 else if (distanceFrontLeft < 40 || distanceSideLeft < 40) {
